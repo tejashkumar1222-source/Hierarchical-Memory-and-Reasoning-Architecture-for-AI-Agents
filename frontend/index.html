@@ -1,0 +1,1250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Crect width=%2264%22 height=%2264%22 rx=%2210%22 fill=%22white%22/%3E%3Ctext x=%2232%22 y=%2243%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2232%22 font-weight=%22bold%22 fill=%22black%22%3EH%3C/text%3E%3C/svg%3E">
+<title>HMRA - Hierarchical Memory & Reasoning Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+<style>
+:root{
+  --bg:#f7faf9;--surface:#ffffff;--surface2:#f3f7f5;--text:#142033;--muted:#718096;
+  --line:#e3ebe7;--accent:#0f9f79;--accent2:#dff6ee;--accent3:#087f61;--danger:#d94c4c;
+  --warning:#d9822b;--info:#2b6cb0;--shadow:0 10px 35px rgba(20,32,51,.07);--radius:18px;
+}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--text);background:var(--bg)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+.app{min-height:100vh;display:grid;grid-template-columns:270px minmax(0,1fr) 320px;background:var(--bg)}
+.sidebar{background:rgba(255,255,255,.95);border-right:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:11px;padding:5px 8px 2px}
+.brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0fb982,#56d7b1);display:grid;place-items:center;color:#fff;font-weight:900;font-size:20px;box-shadow:0 8px 18px rgba(15,159,121,.2)}
+.brand-name{font-size:22px;font-weight:800;letter-spacing:-.7px}.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.newchat{border:0;background:var(--accent);color:#fff;padding:12px 15px;border-radius:13px;font-weight:700;display:flex;gap:9px;align-items:center;justify-content:center;box-shadow:0 8px 20px rgba(15,159,121,.18);transition:.15s}
+.newchat:hover{background:var(--accent3)}
+.nav{display:grid;gap:3px}
+.nav button{border:0;background:transparent;color:#334155;text-align:left;padding:10px 12px;border-radius:11px;display:flex;align-items:center;gap:10px;font-weight:600;font-size:13.5px;transition:.15s}
+.nav button:hover{background:var(--surface2)}
+.nav button.active{background:#e8f6f1;color:#075f4a}
+.ico{width:18px;text-align:center;font-size:16px}
+.sidebar-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:4px 6px;margin-top:2px}
+.section-label{font-size:11px;font-weight:750;color:#718096;text-transform:uppercase;letter-spacing:.6px}
+.clear-chats-btn{border:0;background:transparent;color:#94a3b8;font-size:11px;font-weight:600;cursor:pointer;padding:2px 6px;border-radius:6px;transition:.15s}
+.clear-chats-btn:hover{color:var(--danger);background:rgba(217,76,76,.12)}
+.recent{display:flex;flex-direction:column;gap:3px;flex:1;min-height:140px;max-height:340px;overflow-y:auto;padding-right:2px}
+.recent::-webkit-scrollbar{width:4px}
+.recent::-webkit-scrollbar-thumb{background:#cbd5d1;border-radius:99px}
+.recent-item{display:flex;align-items:center;justify-content:space-between;border-radius:10px;padding:2px 4px;background:transparent;transition:.15s;border:1px solid transparent}
+.recent-item:hover{background:var(--surface2)}
+.recent-item.active{background:#e8f6f1;border-color:#b9e8d7;color:#075f4a;font-weight:600}
+.dark .recent-item.active{background:#112a22;border-color:#1c4d3d;color:#45d3aa}
+.dark .recent-item:hover{background:#142237}
+.recent-btn{border:0;background:transparent;text-align:left;padding:7px 6px;border-radius:8px;color:inherit;font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;cursor:pointer;display:flex;align-items:center;gap:7px}
+.recent-btn .chat-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;font-size:12.5px}
+.recent-ico{font-size:12px;opacity:.75;flex-shrink:0}
+.recent-del{border:0;background:transparent;color:#94a3b8;border-radius:6px;width:22px;height:22px;display:none;align-items:center;justify-content:center;font-size:13px;cursor:pointer;padding:0;margin-right:2px;flex-shrink:0}
+.recent-item:hover .recent-del{display:flex}
+.recent-del:hover{color:var(--danger);background:rgba(217,76,76,.15)}
+.status-card{margin-top:auto;border:1px solid var(--line);background:#effaf6;border-radius:15px;padding:13px}
+.online{display:flex;align-items:center;gap:7px;font-weight:750}
+.dot{width:9px;height:9px;border-radius:50%;background:#16b979;display:inline-block;box-shadow:0 0 0 4px #d9f5ea}
+.status-card .muted{margin-top:6px;font-size:12px;color:var(--muted)}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.topbar{height:74px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.8);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:space-between;padding:0 26px;position:sticky;top:0;z-index:5}
+.top-title{font-size:22px;font-weight:800;letter-spacing:-.4px}
+.top-sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.top-actions{display:flex;align-items:center;gap:9px}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#334155;display:grid;place-items:center;transition:.15s}
+.icon-btn:hover{background:var(--surface2)}
+.profile{display:flex;align-items:center;gap:8px;border:0;background:transparent;font-weight:650}
+.avatar{width:34px;height:34px;border-radius:50%;background:#0d9975;color:#fff;display:grid;place-items:center;font-weight:800}
+
+.content{padding:24px;max-width:1150px;width:100%;margin:auto}
+.page{display:none}.page.active{display:block}
+.chat-layout{display:grid;grid-template-columns:minmax(0,1fr);min-height:calc(100vh - 74px)}
+.chat-column{min-width:0;display:flex;flex-direction:column;min-height:calc(100vh - 74px)}
+.conversation{flex:1;overflow-y:auto;padding:22px 6px 140px}
+.empty{max-width:720px;margin:60px auto;text-align:center}
+.empty-mark{width:64px;height:64px;border-radius:20px;background:var(--accent2);color:var(--accent);display:grid;place-items:center;font-size:28px;margin:0 auto 18px}
+.empty h2{font-size:28px;letter-spacing:-.6px;margin:0 0 8px}
+.empty p{color:var(--muted);margin:0 0 24px;font-size:14.5px}
+.suggestions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.suggestion{border:1px solid var(--line);background:#fff;border-radius:14px;padding:13px;text-align:left;color:#344256;transition:.15s}
+.suggestion:hover{border-color:#b8ddd0;background:#fbfffd}
+
+.message{max-width:820px;margin:0 auto 22px;display:flex;gap:12px}
+.message.user{justify-content:flex-end}
+.bubble{max-width:85%;padding:14px 17px;border-radius:17px;line-height:1.65;white-space:pre-wrap;word-break:break-word;font-size:14.5px}
+.message.user .bubble{background:#dff6ee;color:#17362f;border-bottom-right-radius:5px}
+.message.ai .bubble{background:#fff;border:1px solid var(--line);box-shadow:0 5px 18px rgba(20,32,51,.035);border-bottom-left-radius:5px}
+.ai-avatar{width:34px;height:34px;flex:0 0 34px;border-radius:11px;background:linear-gradient(135deg,#0f9f79,#65d5b5);color:#fff;display:grid;place-items:center;font-weight:800;font-size:15px}
+.answer-tools{display:flex;gap:6px;margin:7px 0 0 46px}
+.mini-btn{border:0;background:transparent;color:#8492a0;padding:4px 7px;border-radius:8px;font-size:12px}
+.mini-btn:hover{background:#eef5f2;color:#0b7d60}
+
+.composer-wrap{position:sticky;bottom:0;padding:12px 20px 18px;background:linear-gradient(transparent,var(--bg) 24%)}
+.composer{max-width:820px;margin:auto;background:#fff;border:1px solid #dce7e2;border-radius:20px;box-shadow:0 10px 30px rgba(20,32,51,.08);padding:10px 12px}
+.composer-row{display:flex;align-items:center;gap:8px}
+.composer input{flex:1;border:0;outline:0;padding:10px 8px;background:transparent;color:var(--text);font-size:15px}
+.circle{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;color:#536273;display:grid;place-items:center;font-size:18px;transition:.15s}
+.circle:hover{background:var(--surface2)}
+.send{width:40px;height:40px;border:0;border-radius:50%;background:var(--accent);color:#fff;font-size:16px;display:grid;place-items:center;transition:.15s}
+.send:hover{background:var(--accent3)}
+.composer-meta{display:flex;align-items:center;gap:14px;color:#7a8794;font-size:12px;padding:6px 6px 2px}
+.toggle{width:32px;height:18px;border-radius:99px;background:#cbd5d1;position:relative;display:inline-block;vertical-align:middle;cursor:pointer;transition:.2s}
+.toggle:after{content:"";position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s;box-shadow:0 1px 3px #0002}
+.toggle.on{background:#16a77f}
+.toggle.on:after{left:16px}
+.model-pill{margin-left:auto;border:1px solid var(--line);border-radius:99px;padding:5px 11px;background:#fafcfb;font-weight:600}
+
+.rightbar{border-left:1px solid var(--line);padding:16px;background:#fbfdfc;display:flex;flex-direction:column;gap:13px;overflow-y:auto;height:100vh;position:sticky;top:0}
+.right-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.right-card h3{margin:0 0 11px;font-size:14.5px;letter-spacing:-.2px}
+.info-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:12px}
+.info-row span:first-child{color:#7b8794}
+.memory-item{padding:9px 0;border-top:1px solid #edf1ef}
+.memory-item:first-child{border-top:0}
+.memory-title{font-weight:650;font-size:12.5px;line-height:1.4}
+.memory-meta{font-size:11px;color:#8a97a4;margin-top:3px}
+.quick{display:grid;gap:6px}
+.quick button{border:1px solid var(--line);background:#fff;border-radius:10px;text-align:left;padding:9px 11px;color:#344256;font-size:12.5px;font-weight:550;transition:.15s}
+.quick button:hover{background:var(--surface2);border-color:#badcd0}
+.tip{background:#ecfbf5;border-color:#d1f0e4}
+.tip strong{color:#087f61}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:var(--shadow);margin-bottom:18px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.toolbar input,.toolbar select{border:1px solid var(--line);background:#fff;padding:9px 12px;border-radius:10px;outline:none;font-size:13.5px}
+.primary{background:var(--accent);color:#fff;border:0;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13.5px;transition:.15s}
+.primary:hover{background:var(--accent3)}
+.secondary{background:#fff;color:#334155;border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:13.5px;font-weight:600;transition:.15s}
+.secondary:hover{background:var(--surface2)}
+.danger-btn{background:#fff;color:var(--danger);border:1px solid #f6c0c0;border-radius:10px;padding:9px 14px;font-size:13.5px;font-weight:600}
+.danger-btn:hover{background:#fff5f5}
+
+.scope-badges{display:flex;gap:10px;margin-bottom:14px}
+.scope-badge{padding:6px 12px;border-radius:10px;font-weight:700;font-size:12px;display:flex;align-items:center;gap:6px}
+.badge-global{background:#e8f4fd;color:#20639b;border:1px solid #c2e0f9}
+.badge-team{background:#eaf6f1;color:#087f61;border:1px solid #c2ead9}
+.badge-private{background:#fdf2e9;color:#b35c1e;border:1px solid #fbd9be}
+
+.trace{max-height:75vh;overflow-y:auto}
+.step{border-left:3px solid #43b99a;padding:12px 14px;margin:10px 0;background:#f8fbfa;border-radius:0 12px 12px 0}
+.step.stage-slow{border-left-color:#805ad5}
+.step.stage-fast{border-left-color:#3182ce}
+.step.stage-exec{border-left-color:#d69e2e}
+.step.stage-agent{border-left-color:#38a169}
+.step b{font-size:13px;display:inline-block;margin-bottom:3px}
+.small{font-size:11.5px;color:#8a97a4}
+.memory{border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0;background:#fbfdfc;transition:.15s}
+.memory:hover{border-color:#b9ddd1}
+.scope{font-size:10.5px;padding:3px 8px;border-radius:99px;background:#eaf6f1;color:#087f61;font-weight:700}
+.scope.GLOBAL{background:#e8f4fd;color:#20639b}
+.scope.PRIVATE{background:#fdf2e9;color:#b35c1e}
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;font-size:13px}
+.table th{background:var(--surface2);font-weight:700;color:#475569}
+.danger{color:var(--danger)}.ok{color:#07845f}.warning{color:var(--warning)}
+.pre{white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;background:#f8fbfa;border:1px solid var(--line);padding:12px;border-radius:10px}
+.upload{border:2px dashed #b9d9ce;padding:24px;border-radius:14px;background:#fbfffd;text-align:center}
+.loader{display:inline-block;width:14px;height:14px;border:2px solid #5ba88f;border-top-color:transparent;border-radius:50%;animation:r .8s linear infinite}@keyframes r{to{transform:rotate(360deg)}}
+
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+.agent-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fbfdfc}
+.agent-header{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px}
+.agent-status{font-size:10.5px;padding:2px 8px;border-radius:99px;font-weight:700}
+.status-IDLE{background:#edf2f7;color:#4a5568}
+.status-RUNNING{background:#feebc8;color:#c05621;animation:p 1.5s infinite}
+.status-SUCCESS{background:#c6f6d5;color:#22543d}
+.status-REVIEW{background:#e9d8fd;color:#553c9a}
+.status-CONFLICT{background:#fed7d7;color:#9b2c2c}
+@keyframes p{0%,100%{opacity:1}50%{opacity:.6}}
+
+.conflict-card{border:1px solid #fbd9be;border-radius:14px;padding:16px;margin:12px 0;background:#fffaf6}
+.conflict-split{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:12px 0}
+.conflict-box{border:1px solid var(--line);padding:12px;border-radius:10px;background:#fff}
+
+.dark{--bg:#0b1220;--surface:#111a2b;--surface2:#172238;--text:#edf4f1;--muted:#91a1b5;--line:#25344b;--accent:#25b890;--accent2:#123b31}
+.dark .sidebar,.dark .topbar,.dark .rightbar,.dark .card,.dark .right-card,.dark .suggestion,.dark .composer,.dark .icon-btn,.dark .secondary,.dark .quick button,.dark .conflict-box{background:#101a2c}
+.dark .sidebar,.dark .rightbar{background:#0d1626}
+.dark .message.ai .bubble{background:#101a2c}
+.dark .composer input{color:#fff}
+.dark .status-card{background:#0d2a24}
+.dark .pre{background:#0f1828}
+.dark .step{background:#132035}
+.dark .memory{background:#101a2c}
+.dark .table th{background:#16243b}
+
+@media(max-width:1200px){.app{grid-template-columns:250px minmax(0,1fr)}.rightbar{display:none}}
+@media(max-width:800px){.app{grid-template-columns:1fr}.sidebar{position:relative;height:auto;border-right:0;border-bottom:1px solid var(--line)}.status-card{display:none}.recent{max-height:140px}.nav{grid-template-columns:repeat(3,1fr)}.content{padding:14px}.topbar{padding:0 14px}.suggestions{grid-template-columns:1fr}.bubble{max-width:92%}}
+
+/* Rendered Markdown inside AI bubbles */
+.bubble.md-body { white-space: normal; }
+.bubble.md-body h1,.bubble.md-body h2,.bubble.md-body h3,.bubble.md-body h4{
+  font-weight:700; margin:.9em 0 .4em; line-height:1.3; color:#142033;
+}
+.bubble.md-body h1{font-size:1.25em}
+.bubble.md-body h2{font-size:1.12em}
+.bubble.md-body h3{font-size:1.02em}
+.bubble.md-body p{ margin:.5em 0; line-height:1.75; }
+.bubble.md-body ul,.bubble.md-body ol{ margin:.4em 0 .4em 1.4em; padding:0; }
+.bubble.md-body li{ margin:.25em 0; line-height:1.65; }
+.bubble.md-body strong{ font-weight:700; color:#0d2e22; }
+.bubble.md-body em{ font-style:italic; }
+.bubble.md-body code{
+  background:#f0f7f4; border:1px solid #d3e9e1; border-radius:5px;
+  padding:1px 5px; font-family:ui-monospace,Consolas,monospace; font-size:.88em;
+}
+.bubble.md-body pre{
+  background:#f0f7f4; border:1px solid #d3e9e1; border-radius:10px;
+  padding:12px 14px; overflow-x:auto; margin:.7em 0;
+}
+.bubble.md-body pre code{
+  background:none; border:none; padding:0; font-size:.86em;
+}
+.bubble.md-body table{
+  border-collapse:collapse; width:100%; margin:.7em 0; font-size:.92em;
+}
+.bubble.md-body th,.bubble.md-body td{
+  border:1px solid #d3e9e1; padding:8px 12px; text-align:left;
+}
+.bubble.md-body th{ background:#e8f6f1; font-weight:700; color:#0a3d2b; }
+.bubble.md-body tr:nth-child(even) td{ background:#f8fdfb; }
+.bubble.md-body blockquote{
+  border-left:3px solid #43b99a; margin:.6em 0; padding:.4em .8em;
+  color:#4a6375; background:#f4fbf8; border-radius:0 8px 8px 0;
+}
+.bubble.md-body hr{ border:none; border-top:1px solid #dce7e2; margin:.8em 0; }
+.bubble.md-body a{ color:#0d9975; text-decoration:underline; word-break:break-all; }
+.dark .bubble.md-body th{ background:#1a2e24; color:#a3dfcc; }
+.dark .bubble.md-body td{ border-color:#254035; }
+.dark .bubble.md-body tr:nth-child(even) td{ background:#111e18; }
+.dark .bubble.md-body code,.dark .bubble.md-body pre{ background:#101e18; border-color:#254035; }
+.dark .bubble.md-body blockquote{ background:#0f1e18; border-left-color:#25b890; }
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-mark">✦</div>
+    <div>
+      <div class="brand-name">HMRA</div>
+      <div class="brand-sub">Hierarchical Memory & Reasoning</div>
+    </div>
+  </div>
+  <button class="newchat" onclick="newChat()"><span>＋</span> New Chat</button>
+  <div class="nav">
+    <button class="active" data-page="chat"><span class="ico">◌</span> Chat</button>
+    <button data-page="memory"><span class="ico">▤</span> Memory Explorer</button>
+    <button data-page="trace"><span class="ico">⌁</span> Execution Trace</button>
+    <button data-page="conflicts"><span class="ico">△</span> Conflicts</button>
+    <button data-page="ingest"><span class="ico">▱</span> Document Memory</button>
+    <button data-page="evaluation"><span class="ico">📊</span> Evaluation</button>
+    <button data-page="system"><span class="ico">⚙</span> System Status</button>
+  </div>
+  <div class="sidebar-section-hdr">
+    <span class="section-label">Recent Chats</span>
+    <button class="clear-chats-btn" onclick="clearAllChats()" title="Clear all chat history">Clear All</button>
+  </div>
+  <div id="recent" class="recent"></div>
+  <div class="status-card">
+    <div class="online"><span class="dot"></span><span id="sideMode">HMRA Online</span></div>
+    <div class="muted" id="sideModel">Connecting…</div>
+    <div class="muted" id="sideMemInfo">Persistent Memory Active</div>
+  </div>
+</aside>
+
+<main class="main">
+<header class="topbar">
+  <div>
+    <div class="top-title">HMRA Agent</div>
+    <div class="top-sub">3 Scopes · 3 Reasoning Levels · 5 Specialized Agents</div>
+  </div>
+  <div class="top-actions">
+    <button class="icon-btn" title="Refresh State" onclick="loadAllStates()">⟳</button>
+    <button class="profile"><span class="avatar">H</span><span>HMRA Agent</span></button>
+    <button class="icon-btn" title="Toggle theme" onclick="toggleTheme()">☾</button>
+  </div>
+</header>
+
+<div class="content">
+
+<!-- 1. CHAT PAGE -->
+<section id="chat" class="page active">
+ <div class="chat-layout"><div class="chat-column">
+  <div id="chatbox" class="conversation">
+   <div id="emptyState" class="empty">
+    <div class="empty-mark">✦</div>
+    <h2>How can HMRA assist you?</h2>
+    <p>Ask anything. Queries flow through Slow Mind strategic planning, scope-controlled memory retrieval, Fast Mind tactical coordination, and 5 specialist agents.</p>
+    <div class="suggestions">
+      <button class="suggestion" onclick="useSuggestion('Explain the 3 memory scopes in HMRA: Global, Team, and Private')">
+        <b>Explain Memory Hierarchy</b><br><span class="small">Global, Team, and Private memory boundaries</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('Calculate (125 * 8) + (450 / 9) and explain the arithmetic steps')">
+        <b>Calculator Tool Execution</b><br><span class="small">Test Executor math tool with structured steps</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('What are the latest developments in hierarchical memory for AI agents?')">
+        <b>Web-Assisted Research</b><br><span class="small">Invokes Brave search and Researcher analysis</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('Write a Python function to compute cosine similarity between two sparse term vectors')">
+        <b>Coder Specialist Agent</b><br><span class="small">Generates tested code with quality gate review</span>
+      </button>
+    </div>
+   </div>
+  </div>
+
+  <div class="composer-wrap">
+    <div class="composer">
+      <div class="composer-row">
+        <!-- Hidden file input for Chat + button -->
+        <input type="file" id="chatFileInput" style="display:none" onchange="uploadFromChat(this)" accept=".txt,.md,.csv,.json,.pdf">
+        <button class="circle" title="Upload Document into Memory (+)" onclick="$('chatFileInput').click()">＋</button>
+        <input id="query" placeholder="Ask HMRA anything… (Enter to send)" onkeydown="if(event.key==='Enter')send()">
+        <button class="send" title="Send" onclick="send()">➤</button>
+      </div>
+      <div class="composer-meta">
+        <span style="display:flex;align-items:center;gap:5px;cursor:pointer" onclick="toggleWebSearch()">
+          🌐 Web Search <span class="toggle" id="webToggle"></span>
+        </span>
+        <span style="display:flex;align-items:center;gap:5px;cursor:pointer" onclick="toggleMemory()">
+          ▣ Hierarchical Memory <span class="toggle on" id="memToggle"></span>
+        </span>
+        <span class="model-pill" id="composerModel">Loading…</span>
+      </div>
+    </div>
+    <div style="text-align:center;color:#94a3ad;font-size:11px;margin-top:8px">
+      Hierarchical Memory & Reasoning Architecture · Production Research Prototype
+    </div>
+  </div>
+ </div></div>
+</section>
+
+<!-- 2. MEMORY EXPLORER PAGE -->
+<section id="memory" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">Hierarchical Memory Explorer</h2>
+    <p class="small">Explore verified knowledge across GLOBAL, TEAM, and PRIVATE scopes with multi-signal retrieval.</p>
+    
+    <div class="scope-badges">
+      <div class="scope-badge badge-global"><span>🌐 GLOBAL</span><b id="cntGlobal">0</b></div>
+      <div class="scope-badge badge-team"><span>👥 TEAM</span><b id="cntTeam">0</b></div>
+      <div class="scope-badge badge-private"><span>🔒 PRIVATE</span><b id="cntPrivate">0</b></div>
+    </div>
+
+    <div class="toolbar">
+      <select id="scopeFilter" onchange="loadMemory()">
+        <option value="">All Scopes</option>
+        <option value="GLOBAL">GLOBAL Only</option>
+        <option value="TEAM">TEAM Only</option>
+        <option value="PRIVATE">PRIVATE Only</option>
+      </select>
+      <input id="memq" placeholder="Search memories..." onkeydown="if(event.key==='Enter')loadMemory()">
+      <button class="primary" onclick="loadMemory()">Search / Filter</button>
+      <button class="secondary" onclick="manualMemory()">+ Add Memory</button>
+      <button class="secondary" onclick="runConsolidation()">⚡ Consolidate</button>
+    </div>
+    <div id="memories"></div>
+  </div>
+</section>
+
+<!-- 3. EXECUTION TRACE PAGE -->
+<section id="trace" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">Execution Trace & Telemetry</h2>
+    <p class="small">Inspect Slow Mind strategic plans, Fast Mind tactical steps, operational tool execution, and specialist agent hand-offs.</p>
+    <div id="fullTrace" class="trace"></div>
+  </div>
+</section>
+
+<!-- 4. CONFLICTS PAGE -->
+<section id="conflicts" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">Memory Contradictions & Conflicts</h2>
+    <p class="small">Contradictory facts detected during ingestion or reasoning are clustered into conflict groups without silent overwrites.</p>
+    <div id="conflictList"></div>
+  </div>
+</section>
+
+<!-- 5. DOCUMENT MEMORY PAGE -->
+<section id="ingest" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">Document Ingestion Pipeline</h2>
+    <p class="small">Upload TXT, MD, CSV, JSON, or PDF files. The ingestion engine extracts structured text, creates semantic chunks, and assigns scope.</p>
+    <div class="upload">
+      <input type="file" id="file" accept=".txt,.md,.csv,.json,.pdf" style="margin-bottom:12px"><br>
+      <label class="small" style="margin-right:8px">Target Memory Scope:</label>
+      <select id="uploadScope" style="padding:6px 10px;border-radius:8px;border:1px solid var(--line);margin-right:8px">
+        <option value="TEAM">TEAM (Shared task context)</option>
+        <option value="GLOBAL">GLOBAL (Broadly verified)</option>
+        <option value="PRIVATE">PRIVATE (Isolated agent notes)</option>
+      </select>
+      <button class="primary" onclick="uploadDoc()">Ingest Document</button>
+    </div>
+    <pre id="uploadResult" class="pre" style="margin-top:14px;display:none"></pre>
+  </div>
+</section>
+
+<!-- 6. EVALUATION BENCHMARK PAGE -->
+<section id="evaluation" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">Empirical Benchmark & Ablation Evaluation</h2>
+    <p class="small">Quantitative comparison across 4 Baselines and HMRA, plus Ablations A-F across 14 research categories.</p>
+    <div class="toolbar">
+      <button class="primary" id="btnRunEval" onclick="triggerBenchmark()">▶ Run Live Comparative Benchmark</button>
+      <span class="small" id="evalStatus">Ready to execute</span>
+    </div>
+    <div id="evalContainer">
+      <div class="small" style="padding:15px 0">Click "Run Live Comparative Benchmark" to evaluate Baselines vs HMRA.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. SYSTEM STATUS & LIVE AGENTS -->
+<section id="system" class="page">
+  <div class="card">
+    <h2 style="margin-top:0">System Architecture & Health Checks</h2>
+    <p class="small">Runtime inspection of the central Orchestrator, 3 Reasoning Levels, and 5 Specialized Agents.</p>
+
+    <h3 style="margin:16px 0 8px">Live Agent Telemetry</h3>
+    <div class="agent-grid" id="agentGrid"></div>
+
+    <h3 style="margin:24px 0 8px">Component Health Status</h3>
+    <table class="table" id="statusTable">
+      <thead><tr><th>Subsystem</th><th>Status</th><th>Configuration Details</th></tr></thead>
+      <tbody id="statusBody"></tbody>
+    </table>
+
+    <div style="margin-top:20px;display:flex;gap:10px">
+      <button class="secondary" onclick="seedDemoData()">✦ Seed Viva Demo Scenarios</button>
+      <button class="danger-btn" onclick="resetAll()">⌫ Clear Persistent Memory</button>
+    </div>
+  </div>
+</section>
+
+</div>
+</main>
+
+<!-- RIGHTBAR -->
+<aside class="rightbar">
+  <div class="right-card">
+    <h3>▣ Session Info</h3>
+    <div class="info-row"><span>Model</span><b id="infoModel">—</b></div>
+    <div class="info-row"><span>Provider</span><b id="infoProvider">—</b></div>
+    <div class="info-row"><span>LLM Status</span><b class="ok" id="infoStatus">● Active</b></div>
+    <div class="info-row"><span>Memory</span><b>3-Scope Persistent</b></div>
+    <div class="info-row"><span>Last Run</span><b id="infoTime">—</b></div>
+  </div>
+
+  <div class="right-card">
+    <h3>▤ Memory Context</h3>
+    <div class="small" id="memoryCount">Relevant memories (0)</div>
+    <div id="contextList">
+      <div class="small" style="padding-top:10px">Retrieved memories from current task will appear here.</div>
+    </div>
+  </div>
+
+  <div class="right-card">
+    <h3>⌘ Quick Actions</h3>
+    <div class="quick">
+      <button onclick="newChat()">＋ New Chat</button>
+      <button onclick="switchPage('memory')">▤ Explore Memory</button>
+      <button onclick="switchPage('trace')">⌁ Execution Trace</button>
+      <button onclick="runConsolidation()">⚡ Run Consolidation</button>
+      <button onclick="seedDemoData()">✦ Seed Demo Scenarios</button>
+      <button onclick="resetAll()" style="color:var(--danger)">⌫ Clear Memory</button>
+    </div>
+  </div>
+
+  <div class="right-card tip">
+    <h3>💡 Architecture Overview</h3>
+    <div class="small">
+      <strong>HMRA</strong> combines:
+      <br>• <strong>3 Scopes</strong>: Global, Team, Private
+      <br>• <strong>3 Minds</strong>: Slow, Fast, Executor
+      <br>• <strong>5 Agents</strong>: Researcher, Coder, Reviewer, Critic, Synthesizer
+    </div>
+  </div>
+</aside>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ==========================================
+// UTILITY & HELPER FUNCTIONS
+// ==========================================
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function renderMarkdown(text) {
+  if (!text) return '';
+  try {
+    if (window.marked && typeof window.marked.parse === 'function') {
+      return window.marked.parse(text);
+    }
+  } catch (e) {
+    console.error('Markdown parse error:', e);
+  }
+  return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+function switchPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = $(pageId);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.nav button').forEach(btn => {
+    const p = btn.getAttribute('data-page');
+    btn.classList.toggle('active', p === pageId);
+  });
+
+  if (pageId === 'memory') loadMemory();
+  else if (pageId === 'conflicts') loadConflicts();
+  else if (pageId === 'system') loadSystemStatus();
+  else if (pageId === 'evaluation') loadEvaluations();
+  else if (pageId === 'trace') renderTrace(lastTrace);
+}
+
+function initNav() {
+  document.querySelectorAll('.nav button[data-page]').forEach(btn => {
+    btn.onclick = () => switchPage(btn.getAttribute('data-page'));
+  });
+}
+
+function toggleWebSearch() {
+  isWebSearchOn = !isWebSearchOn;
+  const toggle = $('webToggle');
+  if (toggle) toggle.classList.toggle('on', isWebSearchOn);
+}
+
+function toggleMemory() {
+  isMemoryOn = !isMemoryOn;
+  const toggle = $('memToggle');
+  if (toggle) toggle.classList.toggle('on', isMemoryOn);
+}
+
+// ==========================================
+// CHAT SESSION & MULTI-CHAT MANAGEMENT
+// ==========================================
+let lastTrace = [], lastMemories = [], chatStarted = false;
+let isWebSearchOn = false, isMemoryOn = true;
+let chatSessions = [];
+let activeChatId = null;
+
+const EMPTY_STATE_HTML = `
+  <div id="emptyState" class="empty">
+    <div class="empty-mark">✦</div>
+    <h2>How can HMRA assist you?</h2>
+    <p>Ask anything. Queries flow through Slow Mind strategic planning, scope-controlled memory retrieval, Fast Mind tactical coordination, and 5 specialist agents.</p>
+    <div class="suggestions">
+      <button class="suggestion" onclick="useSuggestion('Explain the 3 memory scopes in HMRA: Global, Team, and Private')">
+        <b>Explain Memory Hierarchy</b><br><span class="small">Global, Team, and Private memory boundaries</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('Calculate (125 * 8) + (450 / 9) and explain the arithmetic steps')">
+        <b>Calculator Tool Execution</b><br><span class="small">Test Executor math tool with structured steps</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('What are the latest developments in hierarchical memory for AI agents?')">
+        <b>Web-Assisted Research</b><br><span class="small">Invokes Brave search and Researcher analysis</span>
+      </button>
+      <button class="suggestion" onclick="useSuggestion('Write a Python function to compute cosine similarity between two sparse term vectors')">
+        <b>Coder Specialist Agent</b><br><span class="small">Generates tested code with quality gate review</span>
+      </button>
+    </div>
+  </div>`;
+
+function saveSessions() {
+  try {
+    localStorage.setItem('hmra_chat_sessions_v2', JSON.stringify(chatSessions));
+    localStorage.setItem('hmra_active_chat_id', activeChatId || '');
+  } catch (e) {
+    console.error('Failed to save chat sessions:', e);
+  }
+}
+
+function createSessionObj(title = 'New Chat') {
+  return {
+    id: 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+    title: title,
+    messages: [],
+    trace: [],
+    memories: [],
+    createdAt: Date.now(),
+    updatedAt: Date.now()
+  };
+}
+
+function initChatSessions() {
+  try {
+    const raw = localStorage.getItem('hmra_chat_sessions_v2');
+    if (raw) {
+      chatSessions = JSON.parse(raw);
+    }
+  } catch (e) {
+    chatSessions = [];
+  }
+
+  if (!Array.isArray(chatSessions) || chatSessions.length === 0) {
+    // Check if legacy queries exist
+    try {
+      const oldRecent = JSON.parse(localStorage.getItem('hmra_recent') || '[]');
+      if (Array.isArray(oldRecent) && oldRecent.length > 0) {
+        chatSessions = oldRecent.slice(0, 5).map(q => ({
+          id: 'chat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          title: q.slice(0, 30),
+          messages: [{ type: 'user', text: q, time: '' }],
+          trace: [],
+          memories: [],
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }));
+      }
+    } catch(ex) {}
+  }
+
+  if (!chatSessions || chatSessions.length === 0) {
+    const fresh = createSessionObj('New Chat');
+    chatSessions = [fresh];
+    activeChatId = fresh.id;
+    saveSessions();
+  } else {
+    activeChatId = localStorage.getItem('hmra_active_chat_id');
+    if (!activeChatId || !chatSessions.some(c => c.id === activeChatId)) {
+      activeChatId = chatSessions[0].id;
+    }
+  }
+
+  renderRecent();
+  renderActiveChat();
+}
+
+function getActiveChat() {
+  if (!activeChatId && chatSessions.length > 0) activeChatId = chatSessions[0].id;
+  let chat = chatSessions.find(c => c.id === activeChatId);
+  if (!chat) {
+    chat = createSessionObj('New Chat');
+    chatSessions.unshift(chat);
+    activeChatId = chat.id;
+    saveSessions();
+  }
+  return chat;
+}
+
+function newChat() {
+  switchPage('chat');
+  const cur = getActiveChat();
+  // If current chat is already fresh and empty, reuse it
+  if (cur && cur.messages.length === 0) {
+    renderActiveChat();
+    $('query').value = '';
+    $('query').focus();
+    renderRecent();
+    return;
+  }
+  const newSession = createSessionObj('New Chat');
+  chatSessions.unshift(newSession);
+  activeChatId = newSession.id;
+  saveSessions();
+  renderRecent();
+  renderActiveChat();
+  $('query').value = '';
+  $('query').focus();
+}
+
+function selectChat(id) {
+  switchPage('chat');
+  activeChatId = id;
+  saveSessions();
+  renderRecent();
+  renderActiveChat();
+  $('query').focus();
+}
+
+function deleteChat(id, e) {
+  if (e) e.stopPropagation();
+  chatSessions = chatSessions.filter(c => c.id !== id);
+  if (chatSessions.length === 0) {
+    const fresh = createSessionObj('New Chat');
+    chatSessions = [fresh];
+    activeChatId = fresh.id;
+  } else if (activeChatId === id) {
+    activeChatId = chatSessions[0].id;
+  }
+  saveSessions();
+  renderRecent();
+  renderActiveChat();
+}
+
+function clearAllChats() {
+  if (!confirm('Clear all chat history and start fresh?')) return;
+  chatSessions = [createSessionObj('New Chat')];
+  activeChatId = chatSessions[0].id;
+  saveSessions();
+  renderRecent();
+  renderActiveChat();
+}
+
+function renderRecent() {
+  const container = $('recent');
+  if (!container) return;
+  if (!chatSessions.length) {
+    container.innerHTML = '<div class="small" style="padding:8px 10px;color:var(--muted)">No recent chats.</div>';
+    return;
+  }
+
+  container.innerHTML = chatSessions.map(c => {
+    const isActive = c.id === activeChatId;
+    const title = escapeHtml(c.title || 'New Chat');
+    return `
+      <div class="recent-item ${isActive ? 'active' : ''}">
+        <button class="recent-btn" onclick="selectChat('${c.id}')" title="${title}">
+          <span class="recent-ico">💬</span>
+          <span class="chat-title">${title}</span>
+        </button>
+        <button class="recent-del" onclick="deleteChat('${c.id}', event)" title="Delete chat">✕</button>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderActiveChat() {
+  const chatbox = $('chatbox');
+  if (!chatbox) return;
+  const chat = getActiveChat();
+  if (!chat || chat.messages.length === 0) {
+    chatbox.innerHTML = EMPTY_STATE_HTML;
+    chatStarted = false;
+    lastTrace = [];
+    renderTrace([]);
+    renderContext([]);
+    return;
+  }
+
+  chatStarted = true;
+  chatbox.innerHTML = '';
+  chat.messages.forEach(m => {
+    appendMessageDOM(m.type, m.text);
+  });
+  lastTrace = chat.trace || [];
+  renderTrace(lastTrace);
+  renderContext(chat.memories || []);
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+
+function appendMessageDOM(type, text) {
+  const chatbox = $('chatbox');
+  if (!chatbox) return null;
+  const wrap = document.createElement('div');
+  wrap.className = 'message ' + type;
+  if (type === 'ai') {
+    wrap.innerHTML = `<div class="ai-avatar">✦</div><div><div class="bubble md-body"></div><div class="answer-tools"><button class="mini-btn" title="Copy" onclick="copyText(this)">▢ Copy</button></div></div>`;
+    const bubble = wrap.querySelector('.bubble');
+    bubble.innerHTML = renderMarkdown(text);
+    bubble.dataset.rawText = text;
+  } else {
+    wrap.innerHTML = '<div class="bubble"></div>';
+    wrap.querySelector('.bubble').textContent = text;
+  }
+  chatbox.appendChild(wrap);
+  chatbox.scrollTop = chatbox.scrollHeight;
+  return wrap;
+}
+
+function addMessage(type, text) {
+  const chat = getActiveChat();
+  if (!chatStarted) {
+    $('chatbox').innerHTML = '';
+    chatStarted = true;
+  }
+  const wrap = appendMessageDOM(type, text);
+  chat.messages.push({
+    type: type,
+    text: text,
+    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  });
+  chat.updatedAt = Date.now();
+  saveSessions();
+  return wrap;
+}
+
+function copyText(btn) {
+  let bubble = btn.closest('.message').querySelector('.bubble');
+  let text = bubble.dataset.rawText || bubble.textContent;
+  navigator.clipboard?.writeText(text);
+  btn.textContent = '✓ Copied';
+  setTimeout(() => btn.textContent = '▢ Copy', 1200);
+}
+
+function renderTrace(trace) {
+  lastTrace = trace || [];
+  let html = '';
+  for (const s of lastTrace) {
+    let cls = 'step';
+    if (s.stage.includes('slow')) cls += ' stage-slow';
+    else if (s.stage.includes('fast')) cls += ' stage-fast';
+    else if (s.stage.includes('exec') || s.stage.includes('tool')) cls += ' stage-exec';
+    else if (s.stage.includes('agent')) cls += ' stage-agent';
+
+    html += `<div class="${cls}">
+      <b>${escapeHtml(s.stage.toUpperCase())}</b> · <span class="small">${escapeHtml(s.actor)}</span>
+      <div class="pre" style="margin-top:6px;max-height:220px;overflow-y:auto">${escapeHtml(JSON.stringify(s.data || {}, null, 2))}</div>
+    </div>`;
+  }
+  $('fullTrace').innerHTML = html || '<div class="small">No execution trace yet. Ask a question from Chat.</div>';
+}
+
+function renderContext(arr) {
+  lastMemories = arr || [];
+  $('memoryCount').textContent = `Relevant memories (${lastMemories.length})`;
+  if (!lastMemories.length) {
+    $('contextList').innerHTML = '<div class="small" style="padding-top:10px">No memories retrieved for this query.</div>';
+    return;
+  }
+  $('contextList').innerHTML = lastMemories.slice(0, 5).map(m => `
+    <div class="memory-item">
+      <div class="memory-title">${escapeHtml((m.content || 'Memory').slice(0, 80))}</div>
+      <div class="memory-meta"><span class="scope ${escapeHtml(m.scope)}">${escapeHtml(m.scope)}</span> · Conf: ${m.confidence ?? '—'} · Score: ${m.retrieval_score ?? '—'}</div>
+    </div>
+  `).join('');
+}
+
+function useSuggestion(q) {
+  switchPage('chat');
+  $('query').value = q;
+  $('query').focus();
+}
+
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
+    ...options,
+    headers: {
+      ...(options.headers || {})
+    }
+  });
+
+  const contentType = response.headers.get('content-type') || '';
+  const raw = await response.text();
+
+  let data;
+  try {
+    data = contentType.includes('application/json') && raw ? JSON.parse(raw) : raw;
+  } catch (_) {
+    data = raw;
+  }
+
+  if (!response.ok) {
+    const message =
+      (data && typeof data === 'object' && (data.detail || data.message))
+        ? (data.detail || data.message)
+        : `HTTP ${response.status} ${response.statusText}`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function send() {
+  let q = $('query').value.trim();
+  if (!q) return;
+
+  const chat = getActiveChat();
+  if (chat.messages.length === 0) {
+    chat.title = q.length > 28 ? q.slice(0, 28) + '…' : q;
+    $('chatbox').innerHTML = '';
+    chatStarted = true;
+  }
+
+  addMessage('user', q);
+  $('query').value = '';
+  renderRecent();
+
+  let loading = appendMessageDOM('ai', '');
+  loading.querySelector('.bubble').innerHTML = '<span class="loader"></span> HMRA: Slow Mind strategic planning & specialist agents active…';
+
+  try {
+    let payload = {
+      query: q,
+      requester: 'orchestrator',
+      use_memory: isMemoryOn,
+      use_web_search: isWebSearchOn
+    };
+    let d = await api('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    loading.remove();
+
+    addMessage('ai', d.answer);
+
+    chat.trace = d.trace || [];
+    chat.memories = d.retrieved_memories || [];
+    chat.updatedAt = Date.now();
+    saveSessions();
+
+    renderTrace(d.trace);
+    renderContext(d.retrieved_memories || []);
+    $('infoTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    renderRecent();
+    loadAllStates();
+  } catch (e) {
+    loading.remove();
+    const errMsg = 'I encountered an error executing this request: ' + e.message;
+    addMessage('ai', errMsg);
+    $('infoTime').textContent = 'Error';
+  }
+}
+
+async function uploadFromChat(input) {
+  let file = input.files[0];
+  if (!file) return;
+  let fd = new FormData();
+  fd.append('file', file);
+  let note = appendMessageDOM('ai', `Uploading and ingesting ${file.name} into TEAM memory…`);
+  try {
+    let res = await api('/api/ingest?scope=TEAM&owner_agent=user', { method: 'POST', body: fd });
+    note.remove();
+    addMessage('ai', `✓ Successfully ingested ${file.name}! Created ${res.chunks_created} memory chunks in TEAM scope ready for retrieval.`);
+    loadMemory();
+  } catch (e) {
+    note.remove();
+    addMessage('ai', `❌ Document ingestion failed for ${file.name}: ` + e.message);
+  }
+  input.value = '';
+}
+
+async function loadMemory() {
+  try {
+    let scope = $('scopeFilter').value;
+    let q = $('memq').value.trim();
+    let url = q
+      ? `/api/memory/search?q=${encodeURIComponent(q)}&requester=orchestrator&top_k=50`
+      : `/api/memory?limit=100${scope ? '&scope=' + scope : ''}`;
+    let d = await api(url);
+    let arr = d.memories || d.results || [];
+    if (scope && q) arr = arr.filter(x => x.scope === scope);
+
+    // Update scope badges
+    if (d.scope_counts) {
+      $('cntGlobal').textContent = d.scope_counts.GLOBAL || 0;
+      $('cntTeam').textContent = d.scope_counts.TEAM || 0;
+      $('cntPrivate').textContent = d.scope_counts.PRIVATE || 0;
+    }
+
+    $('memories').innerHTML = arr.map(m => {
+      let signalsHtml = '';
+      if (m.signals) {
+        signalsHtml = `<div class="small" style="margin-top:4px;color:#087f61">
+          <b>Signals:</b> sem=${m.signals.semantic} · lex=${m.signals.lexical} · rec=${m.signals.recency} · imp=${m.signals.importance} · conf=${m.signals.confidence} · scp=${m.signals.scope}
+        </div>`;
+      }
+      return `
+        <div class="memory">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span class="scope ${escapeHtml(m.scope)}">${escapeHtml(m.scope)}</span>
+              <b style="margin-left:6px;font-size:13px">${escapeHtml(m.id)}</b>
+            </div>
+            <span class="small">${escapeHtml(m.status || 'ACTIVE')}</span>
+          </div>
+          <div style="margin:8px 0;font-size:13.5px;line-height:1.5">${escapeHtml(m.content)}</div>
+          <div class="small">
+            Owner: <b>${escapeHtml(m.owner_agent)}</b> · Conf: ${m.confidence} · Imp: ${m.importance} · Access Count: ${m.access_count} · Source: ${escapeHtml(m.source)}
+          </div>
+          ${signalsHtml}
+          ${m.scope !== 'GLOBAL' ? `<button class="secondary" style="margin-top:8px;padding:5px 11px;font-size:12px" onclick="promotePrompt('${m.id}', '${m.scope}', '${m.status || 'ACTIVE'}')">${m.status === 'PENDING_REVIEW' ? 'Approve & Promote ↗' : 'Promote Memory ↗'}</button>` : ''}
+        </div>`;
+    }).join('') || '<div class="small" style="padding:15px">No memories found matching criteria.</div>';
+  } catch (e) {
+    $('memories').innerHTML = `<div class="danger">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function manualMemory() {
+  let content = prompt('Enter memory content:');
+  if (!content) return;
+  let scope = prompt('Scope: GLOBAL, TEAM, or PRIVATE', 'TEAM');
+  if (!scope) return;
+  try {
+    await api('/api/memory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        content: content,
+        scope: scope.toUpperCase(),
+        owner_agent: 'system',
+        source: 'manual_input',
+        confidence: 0.9,
+        importance: 0.8
+      })
+    });
+    loadMemory();
+  } catch (e) {
+    alert('Error adding memory: ' + e.message);
+  }
+}
+
+async function promotePrompt(id, currentScope, status = 'ACTIVE') {
+  let target = currentScope === 'PRIVATE' ? 'TEAM' : 'GLOBAL';
+  let action = status === 'PENDING_REVIEW' ? 'Approve and promote' : 'Promote';
+  let confirmed = confirm(`${action} memory ${id} from ${currentScope} to ${target}?`);
+  if (!confirmed) return;
+  try {
+    await api(`/api/memory/${id}/promote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target_scope: target, approved_by: 'reviewer', reason: status === 'PENDING_REVIEW' ? 'Reviewer approved durable-memory candidate' : 'Manual reviewer-approved promotion' })
+    });
+    alert(`✓ Memory approved and promoted to ${target}`);
+    loadMemory();
+  } catch (e) {
+    alert('Promotion error: ' + e.message);
+  }
+}
+
+async function runConsolidation() {
+  try {
+    let report = await api('/api/memory/consolidate', { method: 'POST' });
+    alert(`Consolidation Report:\n• Duplicates Found: ${report.duplicates_found}\n• Merged: ${report.merged}\n• Conflicts Detected: ${report.conflicts_found}\n• Conflicts Resolved: ${report.conflicts_resolved}\n• Pending Promotions: ${report.promotions_pending}`);
+    loadMemory();
+    loadConflicts();
+  } catch (e) {
+    alert('Consolidation failed: ' + e.message);
+  }
+}
+
+async function loadConflicts() {
+  try {
+    let d = await api('/api/conflicts');
+    let list = d.conflicts || [];
+    $('conflictList').innerHTML = list.map(c => `
+      <div class="conflict-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <b>${escapeHtml(c.id)}</b>
+          <span class="agent-status ${c.status === 'RESOLVED' ? 'status-SUCCESS' : 'status-CONFLICT'}">${escapeHtml(c.status)}</span>
+        </div>
+        <div class="small" style="margin-top:4px">Detected by <b>${escapeHtml(c.detected_by)}</b> · ${escapeHtml(c.created_at)}</div>
+        <div class="conflict-split">
+          <div class="conflict-box">
+            <span class="small" style="color:var(--info);font-weight:700">Memory A (${escapeHtml(c.memory_a_id)})</span>
+            <div style="margin-top:4px;font-size:13px">${escapeHtml(c.memory_a?.content || 'Record unavailable')}</div>
+            <div class="small" style="margin-top:6px">Confidence: ${c.confidence_a} · Source: ${escapeHtml(c.memory_a?.source || '—')}</div>
+          </div>
+          <div class="conflict-box">
+            <span class="small" style="color:var(--danger);font-weight:700">Memory B (${escapeHtml(c.memory_b_id)})</span>
+            <div style="margin-top:4px;font-size:13px">${escapeHtml(c.memory_b?.content || 'Record unavailable')}</div>
+            <div class="small" style="margin-top:6px">Confidence: ${c.confidence_b} · Source: ${escapeHtml(c.memory_b?.source || '—')}</div>
+          </div>
+        </div>
+        ${c.status === 'OPEN' ? `
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="primary" style="padding:6px 12px;font-size:12px" onclick="resolveConflict('${c.id}', 'RESOLVE_A')">Resolve Favoring A</button>
+            <button class="primary" style="padding:6px 12px;font-size:12px" onclick="resolveConflict('${c.id}', 'RESOLVE_B')">Resolve Favoring B</button>
+            <button class="secondary" style="padding:6px 12px;font-size:12px" onclick="resolveConflict('${c.id}', 'DISMISSED')">Dismiss / Preserve Uncertainty</button>
+          </div>` : `
+          <div class="small ok"><b>Resolution:</b> ${escapeHtml(c.resolution || 'Resolved')} · Note: ${escapeHtml(c.resolution_note || '—')}</div>
+        `}
+      </div>
+    `).join('') || '<div class="small" style="padding:15px">No conflicts recorded in memory.</div>';
+  } catch (e) {
+    $('conflictList').innerHTML = `<div class="danger">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+async function resolveConflict(id, resolution) {
+  let note = prompt('Optional resolution note:', `Manual resolution: ${resolution}`);
+  try {
+    await api(`/api/conflicts/${id}/resolve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ resolution: resolution, note: note || '', resolved_by: 'reviewer' })
+    });
+    loadConflicts();
+    loadMemory();
+  } catch (e) {
+    alert('Resolution error: ' + e.message);
+  }
+}
+
+async function uploadDoc() {
+  let f = $('file').files[0];
+  if (!f) return alert('Please select a file to ingest.');
+  let fd = new FormData();
+  fd.append('file', f);
+  let scope = $('uploadScope').value;
+  try {
+    let d = await api(`/api/ingest?scope=${scope}&owner_agent=system`, { method: 'POST', body: fd });
+    $('uploadResult').style.display = 'block';
+    $('uploadResult').textContent = JSON.stringify(d, null, 2);
+    loadMemory();
+  } catch (e) {
+    $('uploadResult').style.display = 'block';
+    $('uploadResult').textContent = 'ERROR: ' + e.message;
+  }
+}
+
+async function loadSystemStatus() {
+  try {
+    let d = await api('/api/system/status');
+    let tbody = '';
+    tbody += `<tr><td><b>Real LLM</b></td><td><span class="ok">● ${d.llm.status}</span></td><td>${d.llm.provider} · Model: ${d.llm.model}</td></tr>`;
+    tbody += `<tr><td><b>Database</b></td><td><span class="ok">● ${d.database.status}</span></td><td>${d.database.engine} · Total active memories: ${d.database.total_active_memories}</td></tr>`;
+    tbody += `<tr><td><b>Web Search</b></td><td><span class="${d.web_search.status === 'CONNECTED' ? 'ok' : 'warning'}">● ${d.web_search.status}</span></td><td>${d.web_search.provider}</td></tr>`;
+    tbody += `<tr><td><b>Embeddings</b></td><td><span class="ok">● ${d.embeddings.status}</span></td><td>${d.embeddings.type}</td></tr>`;
+    tbody += `<tr><td><b>Memory Hierarchy</b></td><td><span class="ok">● ${d.memory.status}</span></td><td>Scopes: ${d.memory.scopes.join(', ')}</td></tr>`;
+    tbody += `<tr><td><b>Specialist Agents</b></td><td><span class="ok">● ${d.agents.status}</span></td><td>${d.agents.specialists.join(', ')}</td></tr>`;
+    tbody += `<tr><td><b>Tool Registry</b></td><td><span class="ok">● ${d.tools.status}</span></td><td>Registered tools: ${d.tools.tools.join(', ')}</td></tr>`;
+    $('statusBody').innerHTML = tbody;
+
+    // Load agents grid
+    loadAgentGrid();
+  } catch (e) {
+    $('statusBody').innerHTML = `<tr><td colspan="3" class="danger">${escapeHtml(e.message)}</td></tr>`;
+  }
+}
+
+async function loadAgentGrid() {
+  try {
+    let d = await api('/api/agents');
+    let html = '';
+    for (const [name, state] of Object.entries(d.agents || {})) {
+      html += `
+        <div class="agent-card">
+          <div class="agent-header">
+            <span>${escapeHtml(name.toUpperCase())}</span>
+            <span class="agent-status status-${escapeHtml(state.status)}">${escapeHtml(state.status)}</span>
+          </div>
+          <div class="small" style="margin-top:6px">${escapeHtml(state.current_task || 'Idle')}</div>
+        </div>`;
+    }
+    $('agentGrid').innerHTML = html;
+  } catch (e) {}
+}
+
+async function loadEvaluations() {
+  try {
+    let d = await api('/api/evaluation');
+    if (!d.runs || !d.runs.length) return;
+    renderBenchmarkSummary(d.runs[0].baseline_results, d.runs[0].ablation_results);
+  } catch (e) {}
+}
+
+async function triggerBenchmark() {
+  $('btnRunEval').disabled = true;
+  $('evalStatus').innerHTML = '<span class="loader"></span> Running live empirical benchmark (Baselines 1-4 & Ablations A-F)…';
+  try {
+    let res = await api('/api/evaluation/run?sample_size=4', { method: 'POST' });
+    renderBenchmarkSummary(res, res.ablations);
+    $('evalStatus').textContent = '✓ Benchmark completed successfully';
+  } catch (e) {
+    $('evalStatus').textContent = 'Error: ' + e.message;
+  }
+  $('btnRunEval').disabled = false;
+}
+
+function renderBenchmarkSummary(res, ablations) {
+  if (!res) return;
+  let html = `
+    <h3 style="margin:16px 0 8px">Comparative Baseline Evaluation</h3>
+    <table class="table">
+      <thead>
+        <tr><th>Architecture</th><th>Task Completion</th><th>Correctness</th><th>Memory Precision</th><th>Retrieval Latency</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>Baseline 1: Plain LLM</b></td><td>${res.baseline_1_plain_llm.task_completion_rate}%</td><td>${res.baseline_1_plain_llm.avg_correctness}%</td><td>${res.baseline_1_plain_llm.avg_memory_precision}%</td><td>${res.baseline_1_plain_llm.avg_retrieval_latency_ms} ms</td></tr>
+        <tr><td><b>Baseline 2: LLM + RAG</b></td><td>${res.baseline_2_rag.task_completion_rate}%</td><td>${res.baseline_2_rag.avg_correctness}%</td><td>${res.baseline_2_rag.avg_memory_precision}%</td><td>${res.baseline_2_rag.avg_retrieval_latency_ms} ms</td></tr>
+        <tr><td><b>Baseline 3: Basic Memory</b></td><td>${res.baseline_3_basic_memory.task_completion_rate}%</td><td>${res.baseline_3_basic_memory.avg_correctness}%</td><td>${res.baseline_3_basic_memory.avg_memory_precision}%</td><td>${res.baseline_3_basic_memory.avg_retrieval_latency_ms} ms</td></tr>
+        <tr><td><b>Baseline 4: Basic Multi-Agent</b></td><td>${res.baseline_4_basic_multi_agent.task_completion_rate}%</td><td>${res.baseline_4_basic_multi_agent.avg_correctness}%</td><td>${res.baseline_4_basic_multi_agent.avg_memory_precision}%</td><td>${res.baseline_4_basic_multi_agent.avg_retrieval_latency_ms} ms</td></tr>
+        <tr style="background:#eaf6f1"><td><b style="color:var(--accent3)">HMRA (System Under Study)</b></td><td><b>${res.system_under_study_hmra.task_completion_rate}%</b></td><td><b>${res.system_under_study_hmra.avg_correctness}%</b></td><td><b>${res.system_under_study_hmra.avg_memory_precision}%</b></td><td><b>${res.system_under_study_hmra.avg_retrieval_latency_ms} ms</b></td></tr>
+      </tbody>
+    </table>`;
+
+  if (ablations) {
+    html += `
+      <h3 style="margin:24px 0 8px">Ablation Analysis (A to F)</h3>
+      <table class="table">
+        <thead><tr><th>Ablation Configuration</th><th>Correctness</th><th>Memory Precision</th><th>Completion</th></tr></thead>
+        <tbody>
+          ${Object.entries(ablations).map(([k, v]) => `
+            <tr><td><b>${escapeHtml(k.replaceAll('_', ' '))}</b></td><td>${v.correctness}%</td><td>${v.memory_precision}%</td><td>${v.completion}%</td></tr>
+          `).join('')}
+        </tbody>
+      </table>`;
+  }
+
+  $('evalContainer').innerHTML = html;
+}
+
+async function seedDemoData() {
+  if (!confirm('Populate safe synthetic demo data for research scenarios?')) return;
+  try {
+    let res = await api('/api/seed', { method: 'POST' });
+    alert('✓ ' + res.message);
+    loadAllStates();
+  } catch (e) {
+    alert('Seed error: ' + e.message);
+  }
+}
+
+async function resetAll() {
+  if (confirm('Delete all persistent memory, conflicts, and execution traces?')) {
+    await api('/api/reset', { method: 'POST' });
+    renderContext([]);
+    loadAllStates();
+  }
+}
+
+async function loadAllStates() {
+  try {
+    const d = await api('/api/status');
+    const llm = d.llm || {};
+    const provider = llm.provider || 'Unknown';
+    const model = llm.model || 'Unknown';
+    const connected = llm.status === 'CONNECTED';
+
+    $('sideModel').textContent = provider + ' · ' + model;
+    $('composerModel').textContent = provider + ' · ' + model;
+    $('infoModel').textContent = model;
+    $('infoProvider').textContent = provider;
+    $('infoStatus').textContent = connected ? '● Active' : '○ Offline';
+    $('infoStatus').className = connected ? 'ok' : 'danger';
+    $('sideMode').textContent = connected ? 'HMRA Online' : 'HMRA Needs API Key';
+    $('sideMode').style.color = connected ? '#087f61' : '#d94c4c';
+  } catch (e) {
+    console.error('HMRA STATUS ERROR:', e);
+    $('sideMode').textContent = 'HMRA Offline';
+    $('sideMode').style.color = '#d94c4c';
+    $('sideModel').textContent = 'Unavailable';
+    $('composerModel').textContent = 'LLM unavailable';
+    $('infoModel').textContent = 'Unavailable';
+    $('infoProvider').textContent = 'Unavailable';
+    $('infoStatus').textContent = '○ Offline';
+    $('infoStatus').className = 'danger';
+  }
+
+  loadMemory();
+  loadConflicts();
+  loadAgentGrid();
+}
+
+function toggleTheme() {
+  document.body.classList.toggle('dark');
+  localStorage.setItem('hmra_dark', document.body.classList.contains('dark') ? '1' : '0');
+}
+if (localStorage.getItem('hmra_dark') === '1') document.body.classList.add('dark');
+
+initNav();
+initChatSessions();
+loadAllStates();
+</script>
+</body>
+</html>

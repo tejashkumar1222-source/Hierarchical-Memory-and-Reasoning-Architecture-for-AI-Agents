@@ -1,0 +1,53 @@
+"""
+HMRA Memory Package Forwarder (Preserves backward compatibility)
+"""
+
+from .memory import (
+    MemoryManager,
+    SCOPES,
+    MemoryScope,
+    MemoryStatus,
+    MemoryRecord,
+    RetrievalSignals,
+    ConflictRecord,
+    PromotionRecord,
+    ConsolidationReport,
+    can_read_memory,
+    can_write_memory,
+    can_promote_memory,
+    can_access_scope,
+    RetrievalEngine,
+    score_memory,
+    log_lineage,
+    mark_superseded,
+    transition_status,
+    mark_conflict,
+    PromotionManager,
+    ConflictManager,
+    MemoryConsolidator,
+)
+
+__all__ = [
+    'MemoryManager',
+    'SCOPES',
+    'MemoryScope',
+    'MemoryStatus',
+    'MemoryRecord',
+    'RetrievalSignals',
+    'ConflictRecord',
+    'PromotionRecord',
+    'ConsolidationReport',
+    'can_read_memory',
+    'can_write_memory',
+    'can_promote_memory',
+    'can_access_scope',
+    'RetrievalEngine',
+    'score_memory',
+    'log_lineage',
+    'mark_superseded',
+    'transition_status',
+    'mark_conflict',
+    'PromotionManager',
+    'ConflictManager',
+    'MemoryConsolidator',
+]

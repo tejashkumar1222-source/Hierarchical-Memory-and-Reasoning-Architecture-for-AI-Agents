@@ -1,0 +1,1 @@
+HMRA integrates 3 memory scopes: GLOBAL, TEAM, and PRIVATE. Each scope enforces strict isolation.
